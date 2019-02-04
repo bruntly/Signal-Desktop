@@ -122,6 +122,7 @@ module.exports = {
   getOutgoingWithoutExpiresAt,
   getNextExpiringMessage,
   getMessagesByConversation,
+  getMessagesSinceDateByConversation,
 
   getUnprocessedCount,
   getAllUnprocessed,
@@ -759,6 +760,18 @@ async function getMessagesByConversation(
   { limit = 100, receivedAt = Number.MAX_VALUE, MessageCollection }
 ) {
   const messages = await channels.getMessagesByConversation(conversationId, {
+    limit,
+    receivedAt,
+  });
+
+  return new MessageCollection(messages);
+}
+
+async function getMessagesSinceDateByConversation(
+  conversationId,
+  { limit = 100, receivedAt = Number.MAX_VALUE, MessageCollection }
+) {
+  const messages = await channels.getMessagesSinceDateByConversation(conversationId, {
     limit,
     receivedAt,
   });

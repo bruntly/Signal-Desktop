@@ -693,6 +693,12 @@
       });
     },
 
+    getNumberToMarkUnread(receivedAt) {
+      return window.Signal.Data.getMessagesSinceDateByConversation(this.id,
+        { receivedAt, MessageCollection: Whisper.MessageCollection }
+      );
+    },
+
     validate(attributes) {
       const required = ['id', 'type'];
       const missing = _.filter(required, attr => !attributes[attr]);
@@ -1308,6 +1314,38 @@
           this.wrapSend(textsecure.messaging.leaveGroup(this.id, options))
         );
       }
+    },
+
+    async markUnread(receivedAt, providedOptions) {
+      const options = providedOptions || {},
+        conversationId = this.id;
+      const messagesToMarkUnread = await this.getNumberToMarkUnread(receivedAt);
+
+      // Set the notification count.
+      const unreadCount = messagesToMarkUnread.length;
+      this.set({ unreadCount });
+      await window.Signal.Data.updateConversation(this.id, this.attributes, {
+        Conversation: Whisper.Conversation,
+      });
+
+      let unread = await Promise.all(
+        _.map(messagesToMarkUnread.models, async providedM => {
+          let m = providedM;
+          if (this.messageCollection.get(m.id)) {
+            m = this.messageCollection.get(m.id);
+            await m.markUnread(options.readAt);
+            const errors = m.get('errors');
+            return {
+              sender: m.get('source'),
+              timestamp: m.get('received_at'),
+              hasErrors: Boolean(errors && errors.length),
+            };
+          }
+        })
+      );
+      // TODO => Deal with unread - and local notificaitons?
+      //  Some messages we're marking read are local notifications with no sender
+      //  I'm not certain if this pertains to unread.  This works messaging yourself.
     },
 
     async markRead(newestUnreadDate, providedOptions) {

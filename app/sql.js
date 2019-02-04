@@ -87,6 +87,7 @@ module.exports = {
   getOutgoingWithoutExpiresAt,
   getNextExpiringMessage,
   getMessagesByConversation,
+  getMessagesSinceDateByConversation,
 
   getUnprocessedCount,
   getAllUnprocessed,
@@ -1305,6 +1306,26 @@ async function getMessagesByConversation(
     `SELECT json FROM messages WHERE
        conversationId = $conversationId AND
        received_at < $received_at
+     ORDER BY received_at DESC
+     LIMIT $limit;`,
+    {
+      $conversationId: conversationId,
+      $received_at: receivedAt,
+      $limit: limit,
+    }
+  );
+
+  return map(rows, row => jsonToObject(row.json));
+}
+
+async function getMessagesSinceDateByConversation(
+  conversationId,
+  { limit = 100, receivedAt = Number.MAX_VALUE } = {}
+) {
+  const rows = await db.all(
+    `SELECT json FROM messages WHERE
+       conversationId = $conversationId AND
+       received_at >= $received_at
      ORDER BY received_at DESC
      LIMIT $limit;`,
     {

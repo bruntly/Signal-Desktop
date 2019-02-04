@@ -82,6 +82,7 @@ export interface Props {
   onClickAttachment?: (attachment: AttachmentType) => void;
   onClickLinkPreview?: (url: string) => void;
   onReply?: () => void;
+  onMarkUnread?: () => void;
   onRetrySend?: () => void;
   onDownload?: (isDangerous: boolean) => void;
   onDelete?: () => void;
@@ -777,6 +778,7 @@ export class Message extends React.Component<Props, State> {
       onDelete,
       onDownload,
       onReply,
+      onMarkUnread,
       onRetrySend,
       onShowDetail,
       i18n,
@@ -811,6 +813,14 @@ export class Message extends React.Component<Props, State> {
           onClick={onReply}
         >
           {i18n('replyToMessage')}
+        </MenuItem>
+        <MenuItem
+          attributes={{
+            className: 'module-message__context__mark-unread',
+          }}
+          onClick={onMarkUnread}
+        >
+          {i18n('markUnread')}
         </MenuItem>
         <MenuItem
           attributes={{
