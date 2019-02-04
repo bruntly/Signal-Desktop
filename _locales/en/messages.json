@@ -837,6 +837,11 @@
     "description":
       "Shown in triple-dot menu next to message to allow user to start crafting a message with a quotation"
   },
+  "markUnread": {
+    "message": "Mark unread",
+    "description":
+      "Shown in triple-dot menu next to message to allow user to mark a conversation unread from here."
+  },
   "originalMessageNotFound": {
     "message": "Original message not found",
     "description":

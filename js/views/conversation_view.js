@@ -142,6 +142,11 @@
       this.listenTo(this.model.messageCollection, 'navigate-to', url => {
         window.location = url;
       });
+      this.listenTo(
+        this.model.messageCollection,
+        'mark-unread',
+        this.markUnread
+      );
 
       this.lazyUpdateVerified = _.debounce(
         this.model.updateVerified.bind(this.model),
@@ -260,7 +265,10 @@
 
       this.onFocus = () => {
         if (this.$el.css('display') !== 'none') {
-          this.markRead();
+          if (this.model.lastFocused !== this.model.id) {
+            this.model.lastFocused = this.model.id;
+            this.markRead();
+          }
         }
       };
       this.window.addEventListener('focus', this.onFocus);
@@ -1094,7 +1102,10 @@
     onClick() {
       // If there are sub-panels open, we don't want to respond to clicks
       if (!this.panels || !this.panels.length) {
-        this.markRead();
+        if (this.model.lastFocused !== this.model.id) {
+          this.model.lastFocused = this.model.id;
+          this.markRead();
+        }
       }
     },
 
@@ -1149,7 +1160,6 @@
 
     markRead() {
       let unread;
-
       if (this.view.atBottom()) {
         unread = this.model.messageCollection.last();
       } else {
@@ -1158,6 +1168,14 @@
 
       if (unread) {
         this.model.markRead(unread.get('received_at'));
+      }
+    },
+
+    markUnread({receivedAt}) {
+      console.log(receivedAt);
+
+      if (receivedAt) {
+        this.model.markUnread(receivedAt);
       }
     },
 

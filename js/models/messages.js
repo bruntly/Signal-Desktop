@@ -506,6 +506,9 @@
         expirationLength,
         expirationTimestamp,
         onReply: () => this.trigger('reply', this),
+        onMarkUnread: () => this.trigger('mark-unread', {
+          receivedAt: this.get('received_at'),
+        }),
         onRetrySend: () => this.retrySend(),
         onShowDetail: () => this.trigger('show-message-detail', this),
         onDelete: () => this.trigger('delete', this),
@@ -1819,6 +1822,21 @@
           messageId: this.id,
         })
       );
+
+      await window.Signal.Data.saveMessage(this.attributes, {
+        Message: Whisper.Message,
+      });
+    },
+    async markUnread(receivedAt) {
+      this.set('unread');
+
+      if (this.get('expireTimer') && !this.get('expirationStartTimestamp')) {
+        const expirationStartTimestamp = Math.min(
+          Date.now(),
+          readAt || Date.now()
+        );
+        this.set({ expirationStartTimestamp });
+      }
 
       await window.Signal.Data.saveMessage(this.attributes, {
         Message: Whisper.Message,
