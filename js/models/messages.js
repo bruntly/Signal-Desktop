@@ -1828,7 +1828,7 @@
       });
     },
     async markUnread(receivedAt) {
-      this.set('unread');
+      this.set('unread', true);
 
       if (this.get('expireTimer') && !this.get('expirationStartTimestamp')) {
         const expirationStartTimestamp = Math.min(

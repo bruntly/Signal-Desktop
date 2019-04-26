@@ -257,6 +257,11 @@ message SyncMessage {
     optional uint64 timestamp = 2;
   }
 
+  message Unread {
+    optional string sender    = 1;
+    optional uint64 id        = 2;
+  }
+
   message Configuration {
     optional bool readReceipts                   = 1;
     optional bool unidentifiedDeliveryIndicators = 2;

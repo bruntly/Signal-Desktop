@@ -662,7 +662,7 @@ MessageSender.prototype = {
       const contentMessage = new textsecure.protobuf.Content();
       contentMessage.syncMessage = syncMessage;
 
-      const silent = true;
+      const silent = false;
       return this.sendIndividualProto(
         myNumber,
         contentMessage,
@@ -671,6 +671,36 @@ MessageSender.prototype = {
         options
       );
     }
+
+    return Promise.resolve();
+  },
+  syncUnreadMessages(unreads, options) {
+    const myNumber = textsecure.storage.user.getNumber();
+    let myDevice = textsecure.storage.user.getDeviceId();
+
+    // TODO need device linking to test this properly.
+    //if (myDevice !== 1 && myDevice !== '1') {
+      const syncMessage = this.createSyncMessage();
+      syncMessage.unread = [];
+      for (let i = 0; i < unreads.length; i += 1) {
+        // TODO Change libsignal-service-java to have this property for testing with Android
+        const unread = new textsecure.protobuf.SyncMessage.Unread();
+        unread.id = unreads[i].id;
+        unread.sender = unreads[i].sender;
+        syncMessage.unread.push(unread);
+      }
+      const contentMessage = new textsecure.protobuf.Content();
+      contentMessage.syncMessage = syncMessage;
+
+      const silent = false;
+      return this.sendIndividualProto(
+        myNumber,
+        contentMessage,
+        Date.now(),
+        silent,
+        options
+      );
+    //}
 
     return Promise.resolve();
   },
@@ -1118,6 +1148,7 @@ textsecure.MessageSender = function MessageSenderWrapper(username, password) {
   this.getProfile = sender.getProfile.bind(sender);
   this.getAvatar = sender.getAvatar.bind(sender);
   this.syncReadMessages = sender.syncReadMessages.bind(sender);
+  this.syncUnreadMessages = sender.syncUnreadMessages.bind(sender);
   this.syncVerification = sender.syncVerification.bind(sender);
   this.sendDeliveryReceipt = sender.sendDeliveryReceipt.bind(sender);
   this.sendReadReceipts = sender.sendReadReceipts.bind(sender);

@@ -1427,17 +1427,30 @@
             m = this.messageCollection.get(m.id);
             await m.markUnread(options.readAt);
             const errors = m.get('errors');
+            // Mark messages unread by ID, excluding local messages (Saftey number has changed)
             return {
-              sender: m.get('source'),
-              timestamp: m.get('received_at'),
+              sender: m.get('source') || this.ourNumber, // We can mark our own messages unread
+              id: m.get('id'),
+              local: m.get('local'),
               hasErrors: Boolean(errors && errors.length),
             };
           }
         })
       );
-      // TODO => Deal with unread - and local notificaitons?
-      //  Some messages we're marking read are local notifications with no sender
-      //  I'm not certain if this pertains to unread.  This works messaging yourself.
+
+      // Some messages we're marking unread are local notifications, don't send those out.
+      unread = _.filter(unread, m => !Boolean(m.local));
+
+      if (unread.length) {
+        window.log.info(`Updating conversation to have ${unread.length} unread messages`);
+        const { sendOptions } = ConversationController.prepareForSend(
+          this.ourNumber,
+          { syncMessage: true }
+        );
+        await this.wrapSend(
+          textsecure.messaging.syncUnreadMessages(unread, sendOptions)
+        );
+      }
     },
 
     async markRead(newestUnreadDate, providedOptions) {

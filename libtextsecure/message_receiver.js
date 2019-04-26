@@ -1103,6 +1103,9 @@ MessageReceiver.prototype.extend({
     } else if (syncMessage.read && syncMessage.read.length) {
       window.log.info('read messages from', this.getEnvelopeId(envelope));
       return this.handleRead(envelope, syncMessage.read);
+    } else if (syncMessage.unread && syncMessage.unread.length) {
+      window.log.info('unread messages from', this.getEnvelopeId(envelope));
+      return this.handleUnread(envelope, syncMessage.read);
     } else if (syncMessage.verified) {
       return this.handleVerified(envelope, syncMessage.verified);
     } else if (syncMessage.configuration) {
@@ -1136,6 +1139,22 @@ MessageReceiver.prototype.extend({
       ev.read = {
         timestamp: read[i].timestamp.toNumber(),
         sender: read[i].sender,
+      };
+      results.push(this.dispatchAndWait(ev));
+    }
+    return Promise.all(results);
+  },
+  // TODO no way to test this without working iPhone integration.
+  handleUnread(envelope, read) {
+    const results = [];
+    for (let i = 0; i < read.length; i += 1) {
+      // TODO: pretty sure this is only needed for readReciepts.
+      //const ev = new Event('unreadSync');
+      ev.confirm = this.removeFromCache.bind(this, envelope);
+      ev.timestamp = envelope.timestamp.toNumber();
+      ev.unread = {
+        timestamp: unread[i].timestamp.toNumber(),
+        sender: unread[i].sender,
       };
       results.push(this.dispatchAndWait(ev));
     }
